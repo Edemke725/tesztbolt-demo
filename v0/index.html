@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TesztBolt – demóalkalmazás (V0 – alapváltozat)</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; margin: 0; color: #1d2733; background: #f4f6f8; }
+  .demo-banner { background: #fff3cd; border-bottom: 1px solid #e0c97a; text-align: center; padding: 6px; font-size: 14px; }
+  .site-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background: #1f3a5f; color: #fff; }
+  .site-header h1 { margin: 0; font-size: 22px; }
+  .site-header a, .site-header button.linklike { color: #fff; }
+  button.linklike { background: none; border: none; text-decoration: underline; font-size: 16px; cursor: pointer; padding: 0; }
+  main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  .panel { background: #fff; border: 1px solid #d5dbe1; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+  .layout { display: flex; gap: 16px; }
+  .side { width: 240px; flex: none; }
+  .layout > div { flex: 1; }
+  .field { margin-bottom: 12px; display: flex; flex-direction: column; }
+  .field label { font-weight: bold; margin-bottom: 4px; }
+  input, select { padding: 8px; font-size: 15px; border: 1px solid #98a4b0; border-radius: 4px; }
+  .btn { padding: 8px 14px; background: #2d6cdf; color: #fff; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; }
+  .btn.secondary { background: #6b7a89; }
+  .error { color: #b3261e; font-size: 13px; min-height: 16px; }
+  .grid-products { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .product-card { background: #fff; border: 1px solid #d5dbe1; border-radius: 6px; padding: 12px; }
+  .product-card h3 { margin: 0 0 4px 0; font-size: 16px; }
+  .product-card .cat { color: #5b6773; font-size: 13px; }
+  .product-card .price { font-weight: bold; margin: 8px 0; }
+  .cart-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e4e8ec; }
+  .footer-bar { margin-top: 16px; padding: 12px; background: #e8eef5; border-radius: 6px; }
+  .qty { width: 56px; }
+  .stepper { display: inline-flex; align-items: center; gap: 6px; }
+  .stepper button { width: 28px; height: 28px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="demo-banner">Demóalkalmazás, kitalált adatok – nem valódi áruház</div>
+<header class="site-header">
+  <h1>TesztBolt</h1>
+  <nav>
+    <span id="welcome"></span>
+    
+    <a href="#" class="hidden" id="cart-link">Kosár (<span id="cart-count">0</span>)</a>
+    
+  </nav>
+</header>
+<main>
+
+<section id="view-login" class="panel">
+  <h2>Belépés</h2>
+  <form id="login-form" novalidate>
+    <div class="field"><label for="username">Felhasználónév</label><input type="text" id="username" autocomplete="off"></div>
+    <div class="field"><label for="password">Jelszó</label><input type="password" id="password" autocomplete="off"></div>
+    <div class="error" id="login-error" role="alert"></div>
+    <button type="submit" class="btn" id="login-btn">Belépés</button>
+  </form>
+  <p style="font-size:13px;color:#5b6773">Demó hozzáférés: felhasználónév <b>demo</b>, jelszó <b>Teszt123!</b></p>
+</section>
+
+<section id="view-shop" class="hidden">
+  <h2>Termékek</h2>
+  <div class="">
+  
+  <div>
+  
+  <div class="panel" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div class="field" style="margin:0"><label for="search-input">Keresés a termékek között</label><input type="text" id="search-input"></div>
+    <div class="field" style="margin:0"><label for="category-filter">Kategória</label>
+      <select id="category-filter"><option value="">Mind</option><option>Elektronika</option><option>Otthon</option><option>Sport</option></select></div>
+    <button type="button" class="btn" id="search-btn">Keresés</button>
+  </div>
+  
+  <p id="result-count" aria-live="polite"></p>
+  <div id="no-results" class="hidden">Nincs találat.</div>
+  <div class="grid-products" id="product-list"></div>
+  
+  </div>
+  </div>
+</section>
+
+<section id="view-cart" class="panel hidden">
+  <h2>Kosár</h2>
+  <div id="empty-cart" class="hidden">A kosár üres.</div>
+  <div id="cart-items"></div>
+  <p>Részösszeg: <span id="subtotal">0 Ft</span></p>
+  <p>Szállítási díj: <span id="shipping">0 Ft</span></p>
+  <p><b>Végösszeg: <span id="cart-total">0 Ft</span></b></p>
+  <button type="button" class="btn secondary" id="back-to-shop">Vissza a termékekhez</button>
+  <button type="button" class="btn" id="checkout-btn">Tovább a pénztárhoz</button>
+</section>
+
+<section id="view-checkout" class="panel hidden">
+  <h2>Szállítási adatok</h2>
+  <form id="ship-form" novalidate>
+  
+  
+  
+    <div class="field"><label for="ship-name">Név</label><input type="text" id="ship-name"><span class="error" id="err-name"></span></div>
+    
+    
+    
+  
+    
+    <div class="field"><label for="ship-email">E-mail cím</label><input type="text" id="ship-email"><span class="error" id="err-email"></span></div>
+    
+    
+  
+    
+    
+    <div class="field"><label for="ship-address">Szállítási cím</label><input type="text" id="ship-address"><span class="error" id="err-address"></span></div>
+    
+  
+    
+    
+    
+    <div class="field"><label for="ship-zip">Irányítószám</label><input type="text" id="ship-zip" maxlength="6"><span class="error" id="err-zip"></span></div>
+  
+    <button type="submit" class="btn" id="place-order">Megrendelés</button>
+  </form>
+</section>
+
+<section id="view-confirm" class="panel hidden">
+  <h2>Köszönjük a rendelést!</h2>
+  <p>Rendelésszám: <span id="order-number"></span></p>
+  <p>Fizetendő összeg: <span id="order-total"></span></p>
+</section>
+
+</main>
+<script>
+(function () {
+  var PRODUCTS = [
+    { id: 1,  name: "Vezeték nélküli fülhallgató", cat: "Elektronika", price: 12990 },
+    { id: 2,  name: "Okosóra",                       cat: "Elektronika", price: 24990 },
+    { id: 3,  name: "Power bank",                    cat: "Elektronika", price: 7990 },
+    { id: 4,  name: "Bluetooth hangszóró",           cat: "Elektronika", price: 9990 },
+    { id: 5,  name: "Asztali lámpa",                 cat: "Otthon",      price: 5990 },
+    { id: 6,  name: "Kávéfőző",                      cat: "Otthon",      price: 18990 },
+    { id: 7,  name: "Párna szett",                   cat: "Otthon",      price: 4990 },
+    { id: 8,  name: "Falióra",                       cat: "Otthon",      price: 3990 },
+    { id: 9,  name: "Jógamatrac",                    cat: "Sport",       price: 6490 },
+    { id: 10, name: "Kulacs",                        cat: "Sport",       price: 2490 },
+    { id: 11, name: "Ugrókötél",                     cat: "Sport",       price: 1990 },
+    { id: 12, name: "Futóöv",                        cat: "Sport",       price: 3490 }
+  ];
+  var SHIPPING_FEE = 1490, FREE_SHIPPING_FROM = 20000;
+  var BUGS = [];
+  var cart = {};   // id -> mennyiség
+  var orderSeq = 1001;
+  var ID = {"back_btn": "back-to-shop", "cart_count": "cart-count", "cart_items": "cart-items", "cart_link": "cart-link", "category": "category-filter", "checkout_btn": "checkout-btn", "count": "result-count", "e_addr": "err-address", "e_email": "err-email", "e_name": "err-name", "e_zip": "err-zip", "empty_cart": "empty-cart", "f_addr": "ship-address", "f_email": "ship-email", "f_name": "ship-name", "f_zip": "ship-zip", "list": "product-list", "login_btn": "login-btn", "login_err": "login-error", "none": "no-results", "order_no": "order-number", "order_total": "order-total", "pwd": "password", "search": "search-input", "search_btn": "search-btn", "shipping": "shipping", "submit_btn": "place-order", "subtotal": "subtotal", "total": "cart-total", "user": "username", "view_cart": "view-cart", "view_checkout": "view-checkout", "view_confirm": "view-confirm", "view_login": "view-login", "view_shop": "view-shop", "welcome": "welcome"};
+  function $(k) { return document.getElementById(ID[k]); }
+  function show(view) {
+    ["view_login", "view_shop", "view_cart", "view_checkout", "view_confirm"].forEach(function (k) { $(k).classList.add("hidden"); });
+    $(view).classList.remove("hidden");
+  }
+  function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " Ft"; }
+  function cartCount() { var n = 0; for (var k in cart) n += cart[k]; return n; }
+  function updateCartLink() { $("cart_count").textContent = cartCount(); }
+  function totals() {
+    var sub = 0;
+    PRODUCTS.forEach(function (p) { if (cart[p.id]) sub += p.price * cart[p.id]; });
+    var ship = (sub === 0 || sub >= FREE_SHIPPING_FROM) ? 0 : SHIPPING_FEE;
+    var total = sub + ship;
+    if (BUGS.indexOf("shipping") >= 0 && ship > 0) total = sub + ship * 2;   // V4 hiba: a szállítási díj kétszer számít
+    return { sub: sub, ship: ship, total: total };
+  }
+
+  // ---- bejelentkezés ----
+  document.getElementById("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var u = $("user").value, p = $("pwd").value;
+    if (u === "demo" && p === "Teszt123!") {
+      $("login_err").textContent = "";
+      $("welcome").textContent = "Üdvözöljük, demo!";
+      var cl = $("cart_link"); if (cl) cl.classList.remove("hidden");
+      show("view_shop"); renderProducts();
+    } else {
+      $("login_err").textContent = "Hibás felhasználónév vagy jelszó.";
+    }
+  });
+
+  // ---- termékek ----
+  function renderProducts() {
+    var q = $("search").value.trim().toLowerCase();
+    var cat = $("category").value;
+    var list = PRODUCTS.filter(function (p) {
+      var okText = !q || p.name.toLowerCase().indexOf(q) >= 0;
+      var okCat = !cat || p.cat === cat;
+      if (BUGS.indexOf("category") >= 0 && q) okCat = true;   // V4 hiba: szövegkeresésnél a kategóriaszűrő figyelmen kívül marad
+      return okText && okCat;
+    });
+    $("count").textContent = list.length + " találat";
+    $("none").classList.toggle("hidden", list.length !== 0);
+    var box = $("list"); box.innerHTML = "";
+    list.forEach(function (p) {
+      var el = document.createElement("article");
+      el.className = "product-card";
+      var qtyHtml = 
+        '<input type="number" min="1" value="1" class="qty" aria-label="Mennyiség">'
+      ;
+      el.innerHTML = '<h3></h3><div class="cat"></div><div class="price"></div>' + qtyHtml +
+        ' <button type="button" class="btn add-to-cart">Kosárba</button>';
+      el.querySelector("h3").textContent = p.name;
+      el.querySelector(".cat").textContent = p.cat;
+      el.querySelector(".price").textContent = fmt(p.price);
+      
+      el.querySelector(".add-to-cart").addEventListener("click", function () {
+        var n = parseInt(el.querySelector(".qty").value, 10);
+        if (!(n >= 1)) n = 1;
+        cart[p.id] = (cart[p.id] || 0) + n;
+        updateCartLink();
+      });
+      box.appendChild(el);
+    });
+  }
+  $("search_btn").addEventListener("click", renderProducts);
+  $("category").addEventListener("change", renderProducts);
+
+  // ---- kosár ----
+  function renderCart() {
+    var box = $("cart_items"); box.innerHTML = "";
+    var has = false;
+    PRODUCTS.forEach(function (p) {
+      if (!cart[p.id]) return;
+      has = true;
+      var row = document.createElement("div");
+      row.className = "cart-row";
+      row.innerHTML = '<span class="nm"></span><span class="ln"></span><button type="button" class="btn secondary remove-item">Eltávolítás</button>';
+      row.querySelector(".nm").textContent = p.name + " × " + cart[p.id];
+      row.querySelector(".ln").textContent = fmt(p.price * cart[p.id]);
+      row.querySelector(".remove-item").addEventListener("click", function () { delete cart[p.id]; updateCartLink(); renderCart(); });
+      box.appendChild(row);
+    });
+    $("empty_cart").classList.toggle("hidden", has);
+    var t = totals();
+    $("subtotal").textContent = fmt(t.sub);
+    $("shipping").textContent = fmt(t.ship);
+    $("total").textContent = fmt(t.total);
+    $("checkout_btn").disabled = !has;
+  }
+  $("cart_link").addEventListener("click", function (e) { e.preventDefault(); renderCart(); show("view_cart"); });
+  $("back_btn").addEventListener("click", function () { show("view_shop"); renderProducts(); });
+  $("checkout_btn").addEventListener("click", function () { show("view_checkout"); });
+
+  // ---- szállítási űrlap ----
+  document.getElementById("ship-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("f_name").value.trim(), email = $("f_email").value.trim(), addr = $("f_addr").value.trim(), zip = $("f_zip").value.trim();
+    var ok = true;
+    $("e_name").textContent = name ? "" : (ok = false, "A név megadása kötelező.");
+    $("e_email").textContent = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? "" : (ok = false, "Érvényes e-mail címet adjon meg.");
+    $("e_addr").textContent = addr ? "" : (ok = false, "A cím megadása kötelező.");
+    if (BUGS.indexOf("zip") >= 0) {
+      $("e_zip").textContent = "";                 // V4 hiba: az irányítószám ellenőrzése kimarad
+    } else {
+      $("e_zip").textContent = /^\d{4}$/.test(zip) ? "" : (ok = false, "Az irányítószám négy számjegy.");
+    }
+    if (!ok) return;
+    var t = totals();
+    $("order_no").textContent = "TB-" + (orderSeq++);
+    $("order_total").textContent = fmt(t.total);
+    cart = {}; updateCartLink();
+    show("view_confirm");
+  });
+
+  show("view_login");
+})();
+</script>
+</body>
+</html>
