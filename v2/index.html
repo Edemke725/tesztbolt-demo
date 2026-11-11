@@ -71,7 +71,7 @@
   <div>
   
   <p id="result-count" aria-live="polite"></p>
-  <div id="no-results" class="hidden">Nincs találat.</div>
+  <div id="no-results" class="hidden"></div>
   <div class="grid-products" id="product-list"></div>
   
   <div class="footer-bar">
@@ -84,7 +84,7 @@
 
 <section id="view-cart" class="panel hidden">
   <h2>Kosár</h2>
-  <div id="empty-cart" class="hidden">A kosár üres.</div>
+  <div id="empty-cart" class="hidden"></div>
   <div id="cart-items"></div>
   <p>Részösszeg: <span id="subtotal">0 Ft</span></p>
   <p>Szállítási díj: <span id="shipping">0 Ft</span></p>
@@ -194,6 +194,7 @@
     });
     $("count").textContent = list.length + " találat";
     $("none").classList.toggle("hidden", list.length !== 0);
+    $("none").textContent = list.length === 0 ? "Nincs találat." : "";
     var box = $("list"); box.innerHTML = "";
     list.forEach(function (p) {
       var el = document.createElement("article");
@@ -235,6 +236,7 @@
       box.appendChild(row);
     });
     $("empty_cart").classList.toggle("hidden", has);
+    $("empty_cart").textContent = has ? "" : "A kosár üres.";
     var t = totals();
     $("subtotal").textContent = fmt(t.sub);
     $("shipping").textContent = fmt(t.ship);
